@@ -1,0 +1,6 @@
+{
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega",
+    "sketch": "rea_tea\\rea_tea.ino",
+    "programmer": "avrispmkii"
+}
