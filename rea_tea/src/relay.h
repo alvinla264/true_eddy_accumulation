@@ -1,3 +1,12 @@
+/*
+File: relay.h
+Author: Alvin La
+Date: 05/30/2024
+Description:
+This file contains a class to help simplify relay usage. Allows for Turning on and off the relay as well as 
+switching the state of the relay.
+*/
+
 #ifndef VALVE_H_
 #define VALVE_H_
 

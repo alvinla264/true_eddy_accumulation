@@ -1,3 +1,11 @@
+/*
+File mfc.h
+Author: Alvin La
+Date: 05/30/2024
+Description:
+This file uses RS-232 to communicate with an ALICAT MFC to set setpoint and retrieve data.
+Uses a RS-232 to TTL converter to communicate with an Arduino
+*/
 #ifndef MFC_H_
 #define MFC_H_
 #define BAUDRATE 19200

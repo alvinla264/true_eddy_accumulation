@@ -1,4 +1,11 @@
-
+/*
+File: anemometer.h
+Author: Alvin La
+Date: 05/30/2024
+Description:
+This file is to obtain data from the Young81000 anemometer wind sensor via RS232. Using a RS232 to TTL converter to
+communicate to the Arduino.
+*/
 #ifndef ANEMOMETER_H_
 #define ANEMOMETER_H_
 #include "Arduino.h"

@@ -1,3 +1,11 @@
+/*
+File: lcd_screen.h
+Author: Alvin La
+Date: 05/30/2024
+Description:
+this file is an extension of the LiquidCrystal library to allow for easier printing to the LCD screen.
+This file was created for a 16x2 LCD shield for Arduino.
+*/
 #ifndef LCD_SCREEN_H_
 #define LCD_SCREEN_H_
 #include <LiquidCrystal.h>
