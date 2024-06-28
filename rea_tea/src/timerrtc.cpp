@@ -1,17 +1,17 @@
-#include "duration.h"
+#include "timerrtc.h"
 
-Duration::Duration(): active(false){
+TimerRTC::TimerRTC(): active(false){
 
 }
 
-bool Duration::BeginRTC(){
+bool TimerRTC::BeginRTC(){
     bool success = rtc.begin();
     target_time = rtc.now();
     has_seconds_passed_timer = rtc.now();
     return success;
 }
 
-bool Duration::StartDuration(int dur_time, TemporalUnit unit){
+bool TimerRTC::StartTimer(int dur_time, TemporalUnit unit){
     active = true;
     switch(unit){
         case minute:
@@ -29,10 +29,11 @@ bool Duration::StartDuration(int dur_time, TemporalUnit unit){
             break;
     }
     target_time = DateTime(rtc.now() + target_timespan);
+    start_time = rtc.now();
     has_seconds_passed_timer = rtc.now();
 }
 
-bool Duration::CheckDuration(){
+bool TimerRTC::UpdateTimer(){
     if(!active)
         Serial.println("Timer Not Active");
     else 
@@ -40,7 +41,7 @@ bool Duration::CheckDuration(){
     return active;
 }
 
-bool Duration::HasSecondsPassed(int num_of_sec = 1){
+bool TimerRTC::HasSecondsPassed(int num_of_sec = 1){
     if((rtc.now() - has_seconds_passed_timer).totalseconds() >= num_of_sec){
         has_seconds_passed_timer = rtc.now();
         return true;
@@ -48,11 +49,14 @@ bool Duration::HasSecondsPassed(int num_of_sec = 1){
     else return false;
 }
 
-void Duration::GetRemainingTime(char *buff){
+void TimerRTC::GetRemainingTime(char *buff){
     TimeSpan time = target_time - rtc.now();
-    sprintf(buff, "%02d:%02d:%02d", time.hour() + (time.day() * 24), time.minute(), time.second());
+    sprintf(buff, "%02d:%02d:%02d", time.hours() + (time.days() * 24), time.minutes(), time.seconds());
 }
-
-DateTime Duration::now(){
+void TimerRTC::GetElapsedTime(char *buff){
+    TimeSpan time = rtc.now() - start_time;
+    sprintf(buff, "%02d:%02d:%02d", time.hours() + (time.days() * 24), time.minutes(), time.seconds());
+}
+DateTime TimerRTC::now(){
     return rtc.now();
 }

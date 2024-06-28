@@ -12,6 +12,7 @@ Description: RotaryEncoder reads the current state of A and B to determine the p
 //#include "digitalWriteFast.h"
 #ifdef ARDUINO_AVR_MEGA2560
 #define BOARD "MEGA2560"
+#define SW 18
 #define outA 3
 #define outB 2
 #define OUTA_PORT PE5
@@ -19,6 +20,7 @@ Description: RotaryEncoder reads the current state of A and B to determine the p
 #define PIN_TYPE PINE
 #elif defined(ARDUINO_AVR_UNO)
 #define BOARD "UNO"
+#define SW 4
 #define outA 3
 #define outB 2
 #define OUTA_PORT PD3

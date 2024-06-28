@@ -1,5 +1,5 @@
-#ifndef DURATION_H_
-#define DURATION_H_
+#ifndef TIMERRTC_H_
+#define TIMERRTC_H_
 #include <RTClib.h>
 enum TemporalUnit{
     second,
@@ -7,21 +7,25 @@ enum TemporalUnit{
     hour,
     day
 };
-class Duration{
+class TimerRTC{
     private:
         RTC_DS3231 rtc;
         DateTime target_time;
         bool active;
+        DateTime start_time;
         TimeSpan target_timespan;
         DateTime has_seconds_passed_timer;
     public:
-        Duration();
+        TimerRTC();
         bool BeginRTC();
-        bool StartDuration(int dur_time, TemporalUnit unit);
-        bool CheckDuration();
+        bool StartTimer(int dur_time, TemporalUnit unit);
+        bool UpdateTimer();
         bool HasSecondsPassed(int num_of_sec = 1);
         void GetRemainingTime(char *buff);
+        void GetElapsedTime(char * buff);
+        String GetRemainingTime();
+        String GetElapsedTime();
         DateTime now();
 };
 
-#endif //DURATION_H_ 
+#endif //TIMERRTC_H_ 
