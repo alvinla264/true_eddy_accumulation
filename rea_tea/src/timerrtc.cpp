@@ -51,11 +51,19 @@ bool TimerRTC::HasSecondsPassed(int num_of_sec = 1){
 
 void TimerRTC::GetRemainingTime(char *buff){
     TimeSpan time = target_time - rtc.now();
-    sprintf(buff, "%02d:%02d:%02d", time.hours() + (time.days() * 24), time.minutes(), time.seconds());
+    int total_hours = time.hours() + (time.days() * 24);
+    if(!total_hours) 
+        sprintf(buff, "%02d:%02d", time.minutes(), time.seconds());
+    else
+        sprintf(buff, "%02d:%02d:%02d", total_hours, time.minutes(), time.seconds());
 }
 void TimerRTC::GetElapsedTime(char *buff){
     TimeSpan time = rtc.now() - start_time;
-    sprintf(buff, "%02d:%02d:%02d", time.hours() + (time.days() * 24), time.minutes(), time.seconds());
+    int total_hours = time.hours() + (time.days() * 24);
+    if(!total_hours) 
+        sprintf(buff, "%02d:%02d", time.minutes(), time.seconds());
+    else
+        sprintf(buff, "%02d:%02d:%02d", total_hours, time.minutes(), time.seconds());
 }
 DateTime TimerRTC::now(){
     return rtc.now();

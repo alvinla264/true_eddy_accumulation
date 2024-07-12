@@ -12,8 +12,9 @@
 #include "mks_mfc.h"
 #include "relay.h"
 #include "rotaryencoder.h"
+#include "l298n.h"
 
-#define SPI_SPEED SD_SCK_MHZ(4)
+`
 
 #define K 0.6 //threshold deadband
 #define RHO_AIR 1.18
@@ -26,8 +27,10 @@
 #define ANEM_DATA_SIZE 6
 
 #define NUM_OF_VALVES 6
-#define VALVE_PIN 27
-#define PUMP_PIN 26
+#define VALVE_PIN 26
+#define PUMP_IN1 4
+#define PUMP_IN2 5
+#define PUMP_EN 9
 
 #define STR_BUFF_SIZE 30
 
@@ -55,7 +58,7 @@ class REATEASystem{
         MksMfc mfc;
         WindStatus wind_status = none;
         Relay valves[NUM_OF_VALVES]; //up1, up2, up3, down1, down2, down3, neutral, bypass
-        Relay pump;
+        L298N pump;
         LCDScreen lcd;
         TimerRTC rtc;
         Anemometer anem;

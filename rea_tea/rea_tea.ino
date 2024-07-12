@@ -1,21 +1,35 @@
-//#include "src/timerrtc.h"
-//#include "src/rotaryencoder.h"
-//#include "src/mks_mfc.h"
+
 #include "src/tea.h"
+#include "src/component_test.h"
+
 //RotaryEncoder enc;
 // bool btn_pressed = false;
 // void updateEncoder(){
 //     enc.ReadState();
 // }
-
 //MksMfc mfc;
-REATEASystem sys;
+//REATEASystem sys;
 void setup(){
     
     Serial.begin(115200);
-    sys.InitializeSDRTC();
-    sys.InitalRun();
-    sys.REASegregation();
+    // anem_test();
+    // mfc_test();
+    // relay_test(26, 33);
+    // sd_test();
+    // rtc_test();
+    // pinMode(4, OUTPUT);
+    // pinMode(5, OUTPUT);
+    // pinMode(9, OUTPUT);
+
+    // digitalWrite(4, HIGH);
+    // digitalWrite(5, LOW);
+    // analogWrite(9, 0);
+
+    pump_test(4, 5, 9);
+
+    // sys.InitializeSDRTC();
+    // sys.InitalRun();
+    // sys.REASegregation();
     //  mfc.GetFullScaleAndUnits();
     //  if(mfc.SetFlow(0)) Serial.println("Success");
     //  Serial.println(mfc.GetFlow());
@@ -27,6 +41,9 @@ void setup(){
 
 void loop(){
     //Serial.println(mfc.GetFlow());
+    // anem.getData();
+    // anem.printData();
+    // delay(1000);
 }
 
 void stream_processing_test(){

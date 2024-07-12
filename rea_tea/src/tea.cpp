@@ -1,13 +1,14 @@
 #include "tea.h"
 
-REATEASystem::REATEASystem(): anem(Serial2), pump(PUMP_PIN), w_prime(0),
-prev_avg(0.0), prev_std_dev(0.0), N(0){
+REATEASystem::REATEASystem(): anem(Serial2), w_prime(0),
+prev_avg(0.0), prev_std_dev(0.0), N(0), pump(PUMP_IN1, PUMP_IN2, PUMP_EN){
     for(int i = 0; i < NUM_OF_VALVES; i++){
         valves[i] = Relay(VALVE_PIN + i);
     }
     file_read_str.reserve(STR_BUFF_SIZE);
     lcd_line[0].reserve(STR_BUFF_SIZE);
     lcd_line[1].reserve(STR_BUFF_SIZE);
+    pump.turn_off();
 }
 
 bool REATEASystem::InitializeSDRTC(){
@@ -83,7 +84,7 @@ void REATEASystem::REASegregation(){
         float delta, delta2;
         float flow_avg = 0.0;
         mfc.SetFlow(200);
-        pump.TurnRelayOn();
+        pump.update_motor(forward, 255);
         while(rtc.UpdateTimer()){
             if(rtc.HasSecondsPassed()){
                 rtc.GetRemainingTime(second_line);
@@ -131,7 +132,7 @@ void REATEASystem::REASegregation(){
             WriteDataTOSD();
         }
 
-        pump.TurnRelayOff();
+        pump.turn_off();
         mfc.SetFlow(0);
         for(int j = 0; j < NUM_OF_VALVES; j++){
             valves[j].TurnRelayOff();
