@@ -18,13 +18,11 @@ class TimerRTC{
     public:
         TimerRTC();
         bool BeginRTC();
-        bool StartTimer(int dur_time, TemporalUnit unit);
+        int32_t StartTimer(int dur_time, TemporalUnit unit);
         bool UpdateTimer();
         bool HasSecondsPassed(int num_of_sec = 1);
         void GetRemainingTime(char *buff);
         void GetElapsedTime(char * buff);
-        String GetRemainingTime();
-        String GetElapsedTime();
         DateTime now();
 };
 

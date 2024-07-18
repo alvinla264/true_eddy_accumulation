@@ -1,5 +1,5 @@
-#ifndef TEA_H_
-#define TEA_H_
+#ifndef REA_TEA_H_
+#define REA_TEA_H_
 
 #include <math.h>
 #include <SPI.h>
@@ -14,7 +14,7 @@
 #include "rotaryencoder.h"
 #include "l298n.h"
 
-`
+#define SPI_SPEED SD_SCK_MHZ(4)
 
 #define K 0.6 //threshold deadband
 #define RHO_AIR 1.18
@@ -38,10 +38,10 @@
 #define STATISTIC_FILE_NAME "stats"
 typedef enum WindStatus{
     up = 0,
-    down = 3,
-    neutral = 6,
-    bypass = 7,
-    none = 8
+    down = NUM_OF_RUNS,
+    neutral = NUM_OF_RUNS * 2,
+    bypass = NUM_OF_RUNS * 2 + 1,
+    none = NUM_OF_RUNS * 2 + 2
 } WindStatus;
 typedef enum DataEnum{
     U,

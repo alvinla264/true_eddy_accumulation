@@ -11,7 +11,7 @@ bool TimerRTC::BeginRTC(){
     return success;
 }
 
-bool TimerRTC::StartTimer(int dur_time, TemporalUnit unit){
+int32_t TimerRTC::StartTimer(int dur_time, TemporalUnit unit){
     active = true;
     switch(unit){
         case minute:
@@ -31,6 +31,7 @@ bool TimerRTC::StartTimer(int dur_time, TemporalUnit unit){
     target_time = DateTime(rtc.now() + target_timespan);
     start_time = rtc.now();
     has_seconds_passed_timer = rtc.now();
+    return target_timespan.totalseconds();
 }
 
 bool TimerRTC::UpdateTimer(){

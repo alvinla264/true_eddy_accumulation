@@ -1,4 +1,4 @@
-#include "tea.h"
+#include "rea_tea.h"
 
 REATEASystem::REATEASystem(): anem(Serial2), w_prime(0),
 prev_avg(0.0), prev_std_dev(0.0), N(0), pump(PUMP_IN1, PUMP_IN2, PUMP_EN){
@@ -13,9 +13,22 @@ prev_avg(0.0), prev_std_dev(0.0), N(0), pump(PUMP_IN1, PUMP_IN2, PUMP_EN){
 
 bool REATEASystem::InitializeSDRTC(){
     if(!rtc.BeginRTC() || !sd.begin(53, SPI_SPEED)) return false;
-    folder_name = rtc.now().timestamp();
-    sd.mkdir(folder_name);
-    sd.chdir(folder_name);
+    DateTime now = rtc.now();
+    sprintf(data_file_name, "%0.02d_%0.02d_%d_%0.02d_%0.02d_%0.02d", 
+        now.month(), now.day(), now.year(), now.hour(), now.minute(), now.second());
+    if(sd.mkdir(data_file_name)){
+        Serial.print("Directory ");
+        Serial.print(data_file_name);
+        Serial.println(" created Successfully");
+        if(!sd.chdir(data_file_name)){
+            Serial.println("Unable to change directiory");
+        }
+    }
+    else{
+        Serial.print("Failed to create directiory ");
+        Serial.println(data_file_name);
+    }
+    
 
 }
 void REATEASystem::WriteDataTOSD(){
@@ -26,27 +39,29 @@ void REATEASystem::WriteDataTOSD(){
     anem_data[windSpd] = anem.getWindSpeed();
     anem_data[windDir] = anem.getWindDir();
     anem_data[wPrime] = w_prime;
-    for(int i = 0; i < ANEM_DATA_SIZE; i++){
+    data_file.print(rtc.now().timestamp() + ",");
+    for(int i = 0; i < ANEM_DATA_SIZE + 1; i++){
         data_file.print(anem_data[i]);
         data_file.print(",");
     }
     data_file.println(WindStatusToString(wind_status));
 }
-
 void REATEASystem::InitalRun(){
-    in_initial_run = true;
-    File initial_run_file;
-    initial_run_file.open("initial_run_data.csv", FILE_WRITE);
-    rtc.StartTimer(INTIAL_RUN_TIME, minute);
+    int total_seconds = rtc.StartTimer(INTIAL_RUN_TIME, minute);
     char second_line[17];
     rtc.GetRemainingTime(second_line);
+    sprintf(data_file_name, "%s0.csv", DATA_FILE_NAME);
+    data_file.open(data_file_name, FILE_WRITE);
+    data_file.println("Date and Time,U,V,W,Temp,W_Prime,Wind Speed, Wind Direction, Wind Status");
     lcd.PrintBothLine("Initial Run", second_line);
     prev_avg = 0;
     N = 0;
     float var_sum = 0.0;
     float delta, delta2;
-    while(rtc.UpdateTimer()){
+    int data_counter = 0;
+    while(data_counter < total_seconds * DATA_FREQ){
         anem.getData();
+        data_counter++;
         N++;
         delta = anem.getUpDown() - prev_avg;
         prev_avg += delta / (float)N;
@@ -54,12 +69,14 @@ void REATEASystem::InitalRun(){
         var_sum += delta * delta2;
         // initial_run_file.println(anem_data[W]);
         // initial_run_file.flush();
-        if(rtc.HasSecondsPassed()){
+        WriteDataTOSD();
+        if(rtc.HasSecondsPassed() && rtc.UpdateTimer()){
             rtc.GetRemainingTime(second_line);
             lcd.PrintSecondLine(second_line, true);
+            Serial.println(second_line);
         }
     }
-    initial_run_file.close();
+    data_file.close();
     prev_std_dev = sqrt(var_sum / (float)(N-1));
 }
 
@@ -76,7 +93,6 @@ void REATEASystem::REASegregation(){
         char second_line[17];
         rtc.GetRemainingTime(second_line);
         lcd.PrintBothLine("Segregation", second_line);
-        pump.TurnRelayOn();
         float mean = 0.0;
         float var_sum = 0.0;
         float meanY = 0.0;
@@ -112,7 +128,7 @@ void REATEASystem::REASegregation(){
             //down
             else if(w_prime < (threshold * -1) && anem.getIsValid()){
                 wind_status = down;
-                valves[i].TurnRelayOff();
+                valves[up + i].TurnRelayOff();
                 valves[down + i].TurnRelayOn();
                 valves[neutral].TurnRelayOff();
                 valves[bypass].TurnRelayOff();

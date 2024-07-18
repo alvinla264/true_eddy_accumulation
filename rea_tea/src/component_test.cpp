@@ -93,5 +93,6 @@ void pump_test(int in1, int in2, int enA = -1){
         pump.update_motor(forward, i);
         delay(50);
     }
-    
+    delay(5000);
+    pump.turn_off(); 
 }

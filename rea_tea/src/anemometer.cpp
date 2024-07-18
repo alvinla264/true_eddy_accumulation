@@ -5,6 +5,7 @@ Anemometer::Anemometer(HardwareSerial &mySerial){
   //sets baudrate
   //mySerial.begin(BAUDRATE);
   //sets the serial to passed in serial
+
   serial = &mySerial;
   serial->begin(BAUDRATE);
   //initialize other fields
@@ -12,70 +13,34 @@ Anemometer::Anemometer(HardwareSerial &mySerial){
   get_cycle_limit = false;
   cycle_limit = 0;
   //mySerial.end();
+  rawString.reserve(ANEM_BUFFER_SIZE);
 }
 
-// String Anemometer::getRawData(){
-//   String data;
-//   //reads data and will keep reading data until it gets a valid rawData
-//   return serial->readStringUntil('\r');
-// }
 void Anemometer::getData(){
-  int num_of_retries = 0;
-  num_of_cycles = 0;
-  if(!get_cycle_limit)
-    cycle_limit = num_of_cycles + 1;
   float data[7] = {0};
-  bool validSpeedOfSound = false;
-  //&& num_of_cycles < cycle_limit
-    //char *buff = (char*) malloc(sizeof(char*) * ANEM_BUFFER_SIZE);
-  while(!validSpeedOfSound && num_of_cycles < cycle_limit ){
-    if(!get_cycle_limit)
-      cycle_limit = num_of_cycles + 10;
-    delay(DELAY_TIME);
-    // Serial.print("waiting time: ");
-    // Serial.println(num_of_cycles);
-    if(serial->available()){
-      
-      serial->readBytesUntil('\r', raw_data, ANEM_BUFFER_SIZE);
-      raw_data[ANEM_BUFFER_SIZE - 1] = '\0';
-      //Serial.print("Raw: ");
-      //Serial.println(raw_data);
-      //Serial.print("buff: ");
-      //Serial.println(buff);
-      // if(!strcmp(buff, "\0")) {
-      //   //Serial.println("in strcmp");
-      //   continue;
-      // }
-      char *token;
-      char *rest = raw_data;
-      int count = 0;
-      while(token = strtok_r(rest, " ", &rest)){
-        if((token && count > 6) || (!token && count < 7)){
-          // Serial.println("In if statement");
-          data[6] = 0;
-          token = NULL;
-          num_of_cycles = 0;
-        }
-        data[count++] = atof(token);
-        // Serial.print("Data Count: ");
-        // Serial.println(count - 1);
-        // Serial.print("Data Value: ");
-        // Serial.println(data[count - 1]);
-        
-      }
-      validSpeedOfSound = data[6] > 300 && data[6] < 400;
+  while(!serial->available()){
+  }
+  rawString = serial->readStringUntil('\r');
+  rawString.trim();
+  int end_index = 0;
+  int data_count = 0;
+  for(int i = 0; i < 7; i++){
+    end_index = rawString.indexOf(" ");
+    if(end_index == -1){
+      data[i] = rawString.toFloat();
     }
     else{
-      num_of_cycles++;
+      data_count++;
+      data[i] = rawString.substring(0, end_index).toFloat();
+      rawString = rawString.substring(end_index);
+      rawString.trim();
     }
-    if(num_of_cycles >= cycle_limit){
-      for(int i = 0; i < 7;i++){
-        data[i] = 0;
-      }
-    } 
   }
-  //free(buff);
-  setData(data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
+  if(!(data[6] > 300 && data[6] < 400) || data_count < 6){
+    getData();
+  }
+  else
+    setData(data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
 }
 
 //sets the value

@@ -13,8 +13,10 @@ communicate to the Arduino.
 #define ANEM_BUFFER_SIZE 70 //49
 #define WAIT_TIME 125 //put delay and wait time in ms
 #define DELAY_TIME 5
+#define DATA_FREQ 10
 class Anemometer{
 private:
+  String rawString;
   float windSpeed;
   float windDir;
   float northSouth;
