@@ -5,7 +5,6 @@ prev_avg(0.0), prev_std_dev(0.0), N(0), pump(PUMP_IN1, PUMP_IN2, PUMP_EN){
     for(int i = 0; i < NUM_OF_VALVES; i++){
         valves[i] = Relay(VALVE_PIN + i);
     }
-    file_read_str.reserve(STR_BUFF_SIZE);
     lcd_line[0].reserve(STR_BUFF_SIZE);
     lcd_line[1].reserve(STR_BUFF_SIZE);
     pump.turn_off();
@@ -32,18 +31,21 @@ bool REATEASystem::InitializeSDRTC(){
 
 }
 void REATEASystem::WriteDataTOSD(){
-    anem_data[U] = anem.getNorthSouth();
-    anem_data[V] = anem.getWestEast();
-    anem_data[W] = anem.getUpDown();
-    anem_data[Temp] = anem.getTempK();
-    anem_data[windSpd] = anem.getWindSpeed();
-    anem_data[windDir] = anem.getWindDir();
-    anem_data[wPrime] = w_prime;
     data_file.print(rtc.now().timestamp() + ",");
-    for(int i = 0; i < ANEM_DATA_SIZE + 1; i++){
-        data_file.print(anem_data[i]);
-        data_file.print(",");
-    }
+    data_file.print(anem.getNorthSouth());
+    data_file.print(",");
+    data_file.print(anem.getWestEast());
+    data_file.print(",");
+    data_file.print(anem.getUpDown());
+    data_file.print(",");
+    data_file.print(anem.getTempK());
+    data_file.print(",");
+    data_file.print(anem.getWindSpeed());
+    data_file.print(",");
+    data_file.print(anem.getWindDir());
+    data_file.print(",");
+    data_file.print(w_prime);
+    data_file.print(",");
     data_file.println(WindStatusToString(wind_status));
 }
 void REATEASystem::InitalRun(){
@@ -58,19 +60,16 @@ void REATEASystem::InitalRun(){
     N = 0;
     float var_sum = 0.0;
     float delta, delta2;
-    int data_counter = 0;
-    while(data_counter < total_seconds * DATA_FREQ){
+    //N < total_seconds * DATA_FREQ
+    while(rtc.UpdateTimer()){
         anem.getData();
-        data_counter++;
         N++;
         delta = anem.getUpDown() - prev_avg;
         prev_avg += delta / (float)N;
         delta2 = anem.getUpDown() - prev_avg;
         var_sum += delta * delta2;
-        // initial_run_file.println(anem_data[W]);
-        // initial_run_file.flush();
         WriteDataTOSD();
-        if(rtc.HasSecondsPassed() && rtc.UpdateTimer()){
+        if(rtc.HasSecondsPassed()){
             rtc.GetRemainingTime(second_line);
             lcd.PrintSecondLine(second_line, true);
             Serial.println(second_line);
@@ -84,12 +83,12 @@ void REATEASystem::REASegregation(){
     for(int i = 0; i < NUM_OF_RUNS; i++){
         sprintf(data_file_name, "%s%d.csv", DATA_FILE_NAME, i + 1);
         data_file.open(data_file_name, FILE_WRITE);
-        data_file.println("U,V,W,Temp,W_Prime,Wind Speed, Wind Direction, Wind Status");
+        data_file.println("Date and Time,U,V,W,Temp,W_Prime,Wind Speed, Wind Direction, Wind Status");
         N = 0;
         float threshold = K * prev_std_dev; 
         unsigned long int num_of_t[2] = {0, 0}; //0: t-up 1: t-down
         long double t_sum[2] = {0.0, 0.0};//0: t-up 1: t-down
-        rtc.StartTimer(SEGREGATION_TIME, minute);
+        int total_seconds = rtc.StartTimer(SEGREGATION_TIME, minute);
         char second_line[17];
         rtc.GetRemainingTime(second_line);
         lcd.PrintBothLine("Segregation", second_line);
@@ -99,15 +98,15 @@ void REATEASystem::REASegregation(){
         float C = 0.0;
         float delta, delta2;
         float flow_avg = 0.0;
-        mfc.SetFlow(200);
+        mfc.SetFlow(0);
         pump.update_motor(forward, 255);
+        //N < DATA_FREQ * total_seconds
         while(rtc.UpdateTimer()){
             if(rtc.HasSecondsPassed()){
                 rtc.GetRemainingTime(second_line);
                 lcd.PrintBothLine("Segregation", second_line);
             }
             anem.getData();
-
             N++;
             delta = anem.getUpDown() - mean;
             mean += delta / (float)(N);

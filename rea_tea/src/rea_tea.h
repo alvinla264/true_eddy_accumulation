@@ -24,7 +24,7 @@
 #define SEGREGATION_TIME 30 //minutes
 
 #define NUM_OF_RUNS 3
-#define ANEM_DATA_SIZE 6
+#define ANEM_DATA_SIZE 9
 
 #define NUM_OF_VALVES 6
 #define VALVE_PIN 26
@@ -50,7 +50,7 @@ typedef enum DataEnum{
     Temp,
     wPrime,
     windSpd,
-    windDir
+    windDir     
 }DataEnum;
 
 class REATEASystem{
@@ -62,16 +62,12 @@ class REATEASystem{
         LCDScreen lcd;
         TimerRTC rtc;
         Anemometer anem;
-        String folder_name;
         SdFat sd;
         String lcd_line[2];
         RotaryEncoder encoder;
-        float anem_data[ANEM_DATA_SIZE]; //u, v, w, temp, w_prime, wind speed, wind direction
         void WriteDataTOSD();
         float w_prime;
-        bool in_initial_run;
         File data_file;
-        String file_read_str;
         char data_file_name[STR_BUFF_SIZE];
         double prev_std_dev; 
         double prev_avg;
