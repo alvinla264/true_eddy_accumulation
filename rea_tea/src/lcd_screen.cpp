@@ -1,37 +1,10 @@
 #include "lcd_screen.h"
 
-LCDScreen::LCDScreen(): lcd(8,9, 4, 5, 6, 7){
-    lcd.begin(16,2);
+LCDScreen::LCDScreen(): lcd(ADDR, 16, 2){
+    lcd.init();
+    lcd.backlight();
     lcd.setCursor(0,0);
     lcd.clear();
-    previousPressed = NotPressed;
-}
-
-
-ButtonPressed LCDScreen:: GetButtonPressed(){
-    int button_pressed = analogRead(buttons);
-    ButtonPressed pressed;
-    if(button_pressed < 60){
-        pressed = Right;
-    }
-    else if(button_pressed < 200){
-        pressed = Up_button;
-    }
-    else if(button_pressed < 400){
-        pressed = Down_button;
-    }
-    else if(button_pressed < 600){
-        pressed = Left;
-    }
-    else if(button_pressed < 800){
-        pressed = Select;
-    }
-    else{
-        pressed = NotPressed;
-    }
-    previousPressed = (pressed == previousPressed) ? NotPressed : pressed;
-    return previousPressed;
-
 }
 
 
@@ -74,14 +47,3 @@ void LCDScreen::ReprintLines(){
     lcd.print(second_line);
 }
 
-void LCDScreen::InitializeLCD(){
-    lcd.begin(16,2);
-}
-
-void LCDScreen::TurnOnDisplay(){
-    lcd.display();
-}
-
-void LCDScreen::TurnOffDisplay(){
-    lcd.noDisplay();
-}

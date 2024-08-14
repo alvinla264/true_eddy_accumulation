@@ -8,31 +8,21 @@ This file was created for a 16x2 LCD shield for Arduino.
 */
 #ifndef LCD_SCREEN_H_
 #define LCD_SCREEN_H_
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 #include "Arduino.h"
 
-typedef enum ButtonPressed{
-    Right,
-    Up_button,
-    Down_button,
-    Left,
-    Select,
-    NotPressed
-}ButtonPressed;
+#define ADDR 0x26
+
 
 class LCDScreen{
     private:
-        int buttons = A0;
-        bool sd_ready;
-        bool rtc_ready;
         char first_line[17];
         char second_line[17];
-        ButtonPressed previousPressed;
-        LiquidCrystal lcd;
+        LiquidCrystal_I2C lcd;
     public:
         
         LCDScreen();
-        ButtonPressed GetButtonPressed();
+
         /**
          * @brief This function prints the string passed in the param 
          * on the first line of the lcd and depending on the boolean in the 
@@ -69,12 +59,6 @@ class LCDScreen{
          * 
          */
         void ReprintLines();
-
-        void InitializeLCD();
-
-        void TurnOffDisplay();
-
-        void TurnOnDisplay();
 };
 
 #endif //LCD_REA_H_

@@ -73,6 +73,8 @@ void rtc_test(){
 void mfc_test(){
     MksMfc mfc;
     mfc.GetFullScaleAndUnits();
+    Relay valve(26);
+    L298N pump(4, 5, 9);
     for(int i = 0; i < 3; i++){
         Serial.println(mfc.GetFlow());
     }

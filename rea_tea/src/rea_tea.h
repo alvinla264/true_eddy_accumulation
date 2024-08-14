@@ -14,6 +14,10 @@
 #include "rotaryencoder.h"
 #include "l298n.h"
 
+#define DEBUG false
+
+#define DEFAULT_FLOW_RATE 200
+
 #define SPI_SPEED SD_SCK_MHZ(4)
 
 #define K 0.6 //threshold deadband
@@ -26,7 +30,7 @@
 #define NUM_OF_RUNS 3
 #define ANEM_DATA_SIZE 9
 
-#define NUM_OF_VALVES 6
+#define NUM_OF_VALVES 8
 #define VALVE_PIN 26
 #define PUMP_IN1 4
 #define PUMP_IN2 5
@@ -63,8 +67,7 @@ class REATEASystem{
         TimerRTC rtc;
         Anemometer anem;
         SdFat sd;
-        String lcd_line[2];
-        RotaryEncoder encoder;
+        //RotaryEncoder encoder;
         void WriteDataTOSD();
         float w_prime;
         File data_file;
@@ -79,9 +82,9 @@ class REATEASystem{
         float temperature_avg[2];
     public:
         REATEASystem();
-        bool InitializeSDRTC();
-        void InitalRun();
-        void REASegregation();
+        void InitializeSDRTC();
+        void InitialDataCollection();
+        void REASampling();
 };
 const char *WindStatusToString(WindStatus status);
 #endif //TEA_H_
