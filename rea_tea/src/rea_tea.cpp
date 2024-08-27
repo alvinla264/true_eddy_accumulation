@@ -59,10 +59,18 @@ void REATEASystem::WriteDataTOSD(){
     data_file.println(WindStatusToString(wind_status));
 }
 void REATEASystem::InitialDataCollection(){
+    log_file.open(LOG_FILE_NAME, FILE_WRITE);
+    log_file.print(rtc.now().timestamp());
+    log_file.println(": Start of InitialDataCollection");
+    log_file.flush();
     int total_seconds = rtc.StartTimer(INTIAL_RUN_TIME, minute);
     char second_line[17];
     rtc.GetRemainingTime(second_line);
     sprintf(data_file_name, "%s0.csv", DATA_FILE_NAME);
+    
+    data_file.open(STATISTIC_FILE_NAME, FILE_WRITE);
+    data_file.println("Sample #, Threshold, B-Coefficient, Heat Flux, Average Flow, W Standard Deviation, W Average, Average Up Temperature, Average Down Temperature");
+    data_file.close();
     data_file.open(data_file_name, FILE_WRITE);
     data_file.println("Date and Time,U,V,W,Temp,W_Prime,Wind Speed, Wind Direction, Wind Status");
     lcd.PrintBothLine("Data Collect", second_line);
@@ -71,8 +79,11 @@ void REATEASystem::InitialDataCollection(){
     float var_sum = 0.0;
     float delta, delta2;
     //N < total_seconds * DATA_FREQ
+    log_file.print(rtc.now().timestamp());
+    log_file.println(": Start of Inital Data Collection Loop");
+    log_file.flush();
     while(rtc.UpdateTimer()){
-        anem.getData();
+        anem.getData(log_file);
         N++;
         delta = anem.getUpDown() - prev_avg;
         prev_avg += delta / (float)N;
@@ -86,6 +97,9 @@ void REATEASystem::InitialDataCollection(){
         }
     }
     data_file.close();
+    log_file.print(rtc.now().timestamp());
+    log_file.println(": End of Inital Data Collection Loop");
+    log_file.flush();
     prev_std_dev = sqrt(var_sum / (float)(N-1));
     if(DEBUG){
         Serial.print("Average: ");
@@ -93,9 +107,16 @@ void REATEASystem::InitialDataCollection(){
         Serial.print("Standard Dev: ");
         Serial.println(prev_std_dev);
     }
+    log_file.print(rtc.now().timestamp());
+    log_file.println(": End of InitialDataCollection");
+    log_file.close();
 }
 
 void REATEASystem::REASampling(){
+    log_file.open(LOG_FILE_NAME, FILE_WRITE);
+    log_file.print(rtc.now().timestamp());
+    log_file.println(": Start of REASampling");
+    log_file.flush();
     for(int i = 0; i < NUM_OF_RUNS; i++){
         sprintf(data_file_name, "%s%d.csv", DATA_FILE_NAME, i + 1);
         data_file.open(data_file_name, FILE_WRITE);
@@ -116,18 +137,27 @@ void REATEASystem::REASampling(){
         float C = 0.0;
         float delta, delta2;
         float flow_avg = 0.0;
+        float flow = 0;
+        int flow_counter = 0;
         valves[neutral].TurnRelayOn();
         mfc.SetFlow(DEFAULT_FLOW_RATE);
         pump.update_motor(forward, 255);
         while(mfc.GetFlow() < DEFAULT_FLOW_RATE * 0.99){}
         valves[neutral].TurnRelayOff();
-        //N < DATA_FREQ * total_seconds
+        log_file.print(rtc.now().timestamp());
+        log_file.print(": Start of REASampling while(");
+        log_file.print(i + 1);
+        log_file.println(") loop");
+        log_file.flush();
         while(rtc.UpdateTimer()){
             if(rtc.HasSecondsPassed()){
+                flow = mfc.GetFlow();
+                flow_avg += flow;
+                flow_counter++;
                 rtc.GetRemainingTime(second_line);
                 lcd.PrintBothLine(first_line, second_line);
             }
-            anem.getData();
+            anem.getData(log_file);
             N++;
             delta = anem.getUpDown() - mean;
             mean += delta / (float)(N);
@@ -136,8 +166,6 @@ void REATEASystem::REASampling(){
             delta2 = anem.getTempK() - meanY;
             meanY += delta2 / (float)(N);
             C += delta * (anem.getTempK() - meanY);
-            float flow = mfc.GetFlow();
-            flow_avg += flow;
             w_prime = anem.getUpDown() - prev_avg; //w - avg
             if(threshold < w_prime && anem.getIsValid()){
                 wind_status = up;
@@ -174,6 +202,11 @@ void REATEASystem::REASampling(){
                 Serial.println(flow);
             }
         }
+        log_file.print(rtc.now().timestamp());
+        log_file.print(": End of REASampling while(");
+        log_file.print(i + 1);
+        log_file.println(") loop");
+        log_file.flush();
 
         pump.turn_off();
         mfc.SetFlow(0);
@@ -182,17 +215,30 @@ void REATEASystem::REASampling(){
         }
         for(int i = 0; i < 2; i++)
             temperature_avg[i] = (num_of_t[i] > 0) ? t_sum[i] / (float)num_of_t[i] : 0;
-        flow_avg /= (float)N;
+        log_file.print(rtc.now().timestamp());
+        log_file.println(": Finish Calculating Average Temperature");
+        log_file.flush();
+        flow_avg /= (float)flow_counter;
         float denominator = prev_std_dev * (temperature_avg[0] - temperature_avg[1]);
+        log_file.print(rtc.now().timestamp());
+        log_file.println(": Finish Calculating Denominater for B-Coefficient");
+        log_file.flush();
         prev_avg = mean;
         prev_std_dev = sqrt(var_sum/(float)(N - 1));
         covariance = C / (float)(N-1);
         heat_flux = RHO_AIR * CP_AIR * covariance;
         b_coefficient = (denominator == 0) ? 0 : covariance / denominator;
+        log_file.print(rtc.now().timestamp());
+        log_file.println(": Finish Calculating B-Coeff and Heat Flux");
+        log_file.flush();
         data_file.close();
-        sprintf(data_file_name, "%s%d.csv", STATISTIC_FILE_NAME, i + 1);
-        data_file.open(data_file_name, FILE_WRITE);
-        data_file.println("Threshold,B-Coefficient, Heat Flux, Average Flow, Standard Dev, Average, Avg Up Temp, Avg Down Temp");
+        log_file.print(rtc.now().timestamp());
+        log_file.println(": Beginning to write to Stats File");
+        log_file.flush();
+        
+        data_file.open(STATISTIC_FILE_NAME, FILE_WRITE);
+        data_file.print(i + 1);
+        data_file.print(",");
         data_file.print(threshold);
         data_file.print(",");
         data_file.print(b_coefficient);
@@ -209,6 +255,9 @@ void REATEASystem::REASampling(){
         data_file.print(",");
         data_file.println(temperature_avg[1]);
         data_file.close();
+        log_file.print(rtc.now().timestamp());
+        log_file.println(": End of write to Stats File");
+        log_file.flush();
         if(DEBUG){
             Serial.print("New Threshold: ");
             Serial.println(threshold);
@@ -229,6 +278,9 @@ void REATEASystem::REASampling(){
         }
     }
     lcd.PrintBothLine("Sampling", "Finished");
+    log_file.print(rtc.now().timestamp());
+    log_file.println(": End of REASampling");
+    log_file.close();
 }
 
 const char *WindStatusToString(WindStatus status){

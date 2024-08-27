@@ -39,7 +39,8 @@
 #define STR_BUFF_SIZE 30
 
 #define DATA_FILE_NAME "wind_data"
-#define STATISTIC_FILE_NAME "stats"
+#define STATISTIC_FILE_NAME "stats.csv"
+#define LOG_FILE_NAME "log.txt"
 typedef enum WindStatus{
     up = 0,
     down = NUM_OF_RUNS,
@@ -71,6 +72,7 @@ class REATEASystem{
         void WriteDataTOSD();
         float w_prime;
         File data_file;
+        File log_file;
         char data_file_name[STR_BUFF_SIZE];
         double prev_std_dev; 
         double prev_avg;

@@ -16,7 +16,7 @@ Anemometer::Anemometer(HardwareSerial &mySerial){
   rawString.reserve(ANEM_BUFFER_SIZE);
 }
 
-void Anemometer::getData(){
+void Anemometer::getData(File log_file, int num_of_retries = 0){
   float data[7] = {0};
   while(!serial->available()){
   }
@@ -37,7 +37,12 @@ void Anemometer::getData(){
     }
   }
   if(!(data[6] > 300 && data[6] < 400) || data_count < 6){
-    getData();
+    log_file.print("Error Parsing Data: ");
+    log_file.print(data[6]);
+    log_file.print(", ");
+    log_file.println(num_of_retries);
+    log_file.flush();
+    getData(log_file, num_of_retries++);
   }
   else
     setData(data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
@@ -115,26 +120,26 @@ bool Anemometer::getIsValid(){
   return isValid;
 }
 
-void Anemometer::calculateWaitingTime(){
-  Serial.println("Calculating Waiting Time");
-  float average_cycles = 0;
-  int number_of_data = 100;
-  for(int i = 0; i < number_of_data; i++){
-    getData();
-    Serial.print("Cycle #: ");
-    Serial.println(num_of_cycles);
-    average_cycles += num_of_cycles;
-    //printData(Serial);
-  }
-  average_cycles = average_cycles / (float) number_of_data;
-  average_cycles += 2;
-  Serial.print("Average Cycles: ");
-  Serial.println(average_cycles);
-  cycle_limit = (average_cycles * (float) WAIT_TIME) / (float) DELAY_TIME;
-  Serial.print("Cycle Limit: ");
-  Serial.println(cycle_limit);
-  get_cycle_limit = true;
-}
+// void Anemometer::calculateWaitingTime(){
+//   Serial.println("Calculating Waiting Time");
+//   float average_cycles = 0;
+//   int number_of_data = 100;
+//   for(int i = 0; i < number_of_data; i++){
+//     getData();
+//     Serial.print("Cycle #: ");
+//     Serial.println(num_of_cycles);
+//     average_cycles += num_of_cycles;
+//     //printData(Serial);
+//   }
+//   average_cycles = average_cycles / (float) number_of_data;
+//   average_cycles += 2;
+//   Serial.print("Average Cycles: ");
+//   Serial.println(average_cycles);
+//   cycle_limit = (average_cycles * (float) WAIT_TIME) / (float) DELAY_TIME;
+//   Serial.print("Cycle Limit: ");
+//   Serial.println(cycle_limit);
+//   get_cycle_limit = true;
+// }
 
 void Anemometer::InitializeAnem(){
   serial->end();

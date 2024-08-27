@@ -22,14 +22,14 @@ int Relay::GetRelayStatus(){
 
 void Relay::TurnRelayOn(){
     if(relay_status == off){
-        digitalWrite(relay_pin, LOW);
+        digitalWrite(relay_pin, HIGH);
         relay_status = on;
     }
     
 }
 void Relay::TurnRelayOff(){
     if(relay_status == on){
-        digitalWrite(relay_pin, HIGH);
+        digitalWrite(relay_pin, LOW);
         relay_status = off;
     }
     
@@ -37,11 +37,11 @@ void Relay::TurnRelayOff(){
 void Relay::SwitchRelayState(){
     if(relay_status){
         relay_status = off;
-        digitalWrite(relay_pin, HIGH);
+        digitalWrite(relay_pin, LOW);
     }
     else{
         relay_status = on;
-        digitalWrite(relay_pin, LOW);
+        digitalWrite(relay_pin, HIGH);
 
     }
 }
@@ -57,10 +57,3 @@ void Relay::PrintRelayState(Stream &serial){
         serial.println("Off");
     }
 }
-
-// Relay &Relay::operator=(const Relay &other_relay){
-//     if(this != &other_relay){
-//         this->relay_pin = other_relay.relay_pin;
-//         this->relay_status = other_relay.relay_status;
-//     }
-// }

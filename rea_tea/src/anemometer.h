@@ -9,6 +9,7 @@ communicate to the Arduino.
 #ifndef ANEMOMETER_H_
 #define ANEMOMETER_H_
 #include "Arduino.h"
+#include "SdFat.h"
 #define BAUDRATE 38400
 #define ANEM_BUFFER_SIZE 70 //49
 #define WAIT_TIME 125 //put delay and wait time in ms
@@ -58,7 +59,7 @@ public:
    * @brief parses the raw data and sets the values with setData func
    * 
    */
-  void getData();
+  void getData(File log_file, int num_of_retries = 0);
   //void getData_test();
   /**
    * @brief prints the members of the class to param Serial
@@ -77,7 +78,7 @@ public:
   float getTempK();
   float getSpeedOfSound();
   bool getIsValid();
-  void calculateWaitingTime();
+  //void calculateWaitingTime();
   void InitializeAnem();
 };
 
