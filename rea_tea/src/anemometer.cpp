@@ -16,7 +16,7 @@ Anemometer::Anemometer(HardwareSerial &mySerial){
   rawString.reserve(ANEM_BUFFER_SIZE);
 }
 
-void Anemometer::getData(File log_file, int num_of_retries = 0){
+void Anemometer::getData(const File &log_file, int num_of_retries = 0){
   float data[7] = {0};
   while(!serial->available()){
   }

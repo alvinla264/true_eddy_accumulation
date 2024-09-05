@@ -9,8 +9,7 @@
 //MksMfc mfc;
 //
 
-void setup(){
-    // relay_test(26, 33);
+void setup(){    // relay_test(26, 33);
     // while(true){}
     REATEASystem sys;
     Serial.begin(115200);

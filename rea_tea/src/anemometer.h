@@ -59,7 +59,7 @@ public:
    * @brief parses the raw data and sets the values with setData func
    * 
    */
-  void getData(File log_file, int num_of_retries = 0);
+  void getData(const File &log_file, int num_of_retries = 0);
   //void getData_test();
   /**
    * @brief prints the members of the class to param Serial
