@@ -1,12 +1,13 @@
 #include "component_test.h"
 
-// void anem_test(){
-//     Anemometer anem(Serial2);
-//     for(int i = 0; i < 5; i++){
-//         anem.getData();
-//         anem.printData();
-//     }
-// }
+void anem_test(){
+    File test_file;
+    Anemometer anem(Serial2);
+    for(int i = 0; i < 5; i++){
+        anem.getData(test_file);
+        anem.printData();
+    }
+}
 
 void sd_test(){
     SdFat sd;

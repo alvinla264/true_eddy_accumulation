@@ -8,7 +8,7 @@
 #include "mks_mfc.h"
 #include "l298n.h"
 #define SPI_SPEED SD_SCK_MHZ(4)
-//void anem_test();
+void anem_test();
 void sd_test();
 void rtc_test();
 void mfc_test();

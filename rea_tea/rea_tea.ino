@@ -17,6 +17,10 @@ void setup(){    // relay_test(26, 33);
     sys.InitializeSDRTC();
     sys.InitialDataCollection();
     sys.REASampling();
+    //sd_test();
+    //rtc_test();
+    //mfc_test();
+    //anem_test();
 }
 
 void loop(){

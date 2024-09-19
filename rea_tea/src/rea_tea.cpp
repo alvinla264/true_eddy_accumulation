@@ -80,7 +80,7 @@ void REATEASystem::InitialDataCollection(){
     float delta, delta2;
     //N < total_seconds * DATA_FREQ
     log_file.print(rtc.now().timestamp());
-    log_file.println(": Start of Inital Data Collection Loop");
+    log_file.println(": Start of Initial Data Collection Loop");
     log_file.flush();
     while(rtc.UpdateTimer()){
         anem.getData(log_file);
@@ -142,6 +142,8 @@ void REATEASystem::REASampling(){
         valves[neutral].TurnRelayOn();
         mfc.SetFlow(DEFAULT_FLOW_RATE);
         pump.update_motor(forward, 255);
+        log_file.println("Waitin for flow");
+        log_file.flush();
         while(mfc.GetFlow() < DEFAULT_FLOW_RATE * 0.99){}
         valves[neutral].TurnRelayOff();
         log_file.print(rtc.now().timestamp());
@@ -149,6 +151,12 @@ void REATEASystem::REASampling(){
         log_file.print(i + 1);
         log_file.println(") loop");
         log_file.flush();
+        if(DEBUG){
+            Serial.print(rtc.now().timestamp());
+            Serial.print(": Start of REASampling while(");
+            Serial.print(i + 1);
+            Serial.println(") loop");
+        }
         while(rtc.UpdateTimer()){
             if(rtc.HasSecondsPassed()){
                 flow = mfc.GetFlow();
