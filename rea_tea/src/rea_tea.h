@@ -1,3 +1,10 @@
+/*
+    Author: Alvin La
+    Date: 09/19/2024
+    Description:
+        This file contains the REATEASystem class 
+        to run the rea and tea system. 
+*/
 #ifndef REA_TEA_H_
 #define REA_TEA_H_
 
@@ -11,7 +18,6 @@
 #include "lcd_screen.h"
 #include "mks_mfc.h"
 #include "relay.h"
-#include "rotaryencoder.h"
 #include "l298n.h"
 
 #define DEBUG false
@@ -28,7 +34,9 @@
 #define SEGREGATION_TIME 30 //minutes
 
 #define NUM_OF_RUNS 3
+
 #define ANEM_DATA_SIZE 9
+#define ANEM_DATA_BUFFER_SIZE 70
 
 #define NUM_OF_VALVES 8
 #define VALVE_PIN 26
@@ -58,6 +66,31 @@ typedef enum DataEnum{
     windDir     
 }DataEnum;
 
+struct REATEAData{
+    float w_prime;
+    double prev_std_dev;
+    double prev_avg;
+    double prev_min_w;
+    double prev_max_w;
+    float heat_flux;
+    float b_coefficient;
+    int N;
+    float temperature_avg[2]; //[0] - up, [1] - down
+};
+
+struct AnemDataBuffer{
+    char date_time[ANEM_DATA_BUFFER_SIZE][21];
+    float u[ANEM_DATA_BUFFER_SIZE];
+    float v[ANEM_DATA_BUFFER_SIZE];
+    float w[ANEM_DATA_BUFFER_SIZE];
+    float temp[ANEM_DATA_BUFFER_SIZE];
+    float w_prime[ANEM_DATA_BUFFER_SIZE];
+    float wind_speed[ANEM_DATA_BUFFER_SIZE];
+    float wind_direction[ANEM_DATA_BUFFER_SIZE];
+    char wind_status[ANEM_DATA_BUFFER_SIZE][10];
+    int buffer_count;
+};
+
 class REATEASystem{
     private:
         MksMfc mfc;
@@ -70,23 +103,18 @@ class REATEASystem{
         SdFat sd;
         //RotaryEncoder encoder;
         void WriteDataTOSD();
-        float w_prime;
         File data_file;
         File log_file;
         char data_file_name[STR_BUFF_SIZE];
-        double prev_std_dev; 
-        double prev_avg;
-        float covariance;
-        float heat_flux;
-        float b_coefficient;
-        int N;
-        //void ToggleValvesPumps(WindStatus status);
-        float temperature_avg[2];
+        struct REATEAData data_var;
+        struct AnemDataBuffer anem_buffer;
+        
     public:
         REATEASystem();
         void InitializeSDRTC();
         void InitialDataCollection();
         void REASampling();
+        void StoreAnemBuffer();
 };
 const char *WindStatusToString(WindStatus status);
 #endif //TEA_H_
