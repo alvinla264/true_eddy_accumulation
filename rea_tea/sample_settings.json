@@ -1,5 +1,11 @@
 {
     "sample_type": "rea",
-    "data_collect_time": 30,
-    "segregation_sample_time": 30
+    "data_collect": {
+        "time" : 30,
+        "units" : "minute"
+    },
+    "segregation_sample": {
+        "time" : 30,
+        "units" : "minute"
+    }
 }

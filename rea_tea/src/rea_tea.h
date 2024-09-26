@@ -19,6 +19,7 @@
 #include "mks_mfc.h"
 #include "relay.h"
 #include "l298n.h"
+#include "ArduinoJson.h"
 
 #define DEBUG false
 
@@ -30,8 +31,8 @@
 #define RHO_AIR 1.18
 #define CP_AIR 1005
 
-#define INTIAL_RUN_TIME 30 //minutes
-#define SEGREGATION_TIME 30 //minutes
+#define DEFAULT_DATA_COLLECT_TIME 30 //minutes
+#define DEFAULT_SEGREGATION_TIME 30 //minutes
 
 #define NUM_OF_RUNS 3
 
@@ -56,6 +57,7 @@ typedef enum WindStatus{
     bypass = NUM_OF_RUNS * 2 + 1,
     none = NUM_OF_RUNS * 2 + 2
 } WindStatus;
+
 typedef enum DataEnum{
     U,
     V,
@@ -65,6 +67,11 @@ typedef enum DataEnum{
     windSpd,
     windDir     
 }DataEnum;
+
+typedef enum SampleType{
+    rea,
+    tea
+}SampleType;
 
 struct REATEAData{
     float w_prime;
@@ -108,13 +115,18 @@ class REATEASystem{
         char data_file_name[STR_BUFF_SIZE];
         struct REATEAData data_var;
         struct AnemDataBuffer anem_buffer;
-        
+        struct Time data_collect_time;
+        struct Time segreation_time;
+        SampleType sample_type;
+        void REASampling();
     public:
         REATEASystem();
         void InitializeSDRTC();
         void InitialDataCollection();
-        void REASampling();
+        
         void StoreAnemBuffer();
+        void LoadSettings();
+        void StartSampling();
 };
 const char *WindStatusToString(WindStatus status);
 #endif //TEA_H_

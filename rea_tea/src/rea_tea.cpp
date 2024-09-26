@@ -1,12 +1,17 @@
 #include "rea_tea.h"
 
 REATEASystem::REATEASystem(): anem(Serial2), pump(PUMP_IN1, PUMP_IN2, PUMP_EN),
-data_var{0}, anem_buffer{0}{
+data_var{0}, anem_buffer{0}, sample_type(rea)
+{
     for(int i = 0; i < NUM_OF_VALVES; i++){
         valves[i] = Relay(VALVE_PIN + i);
     }
     pump.turn_off();
     anem_buffer.buffer_count = 0;
+    data_collect_time.time = DEFAULT_DATA_COLLECT_TIME;
+    data_collect_time.unit = minute;
+    segreation_time.time = DEFAULT_SEGREGATION_TIME;
+    segreation_time.unit = minute;
 }
 
 void REATEASystem::InitializeSDRTC(){
@@ -67,7 +72,7 @@ void REATEASystem::InitialDataCollection(){
     log_file.print(rtc.now().timestamp());
     log_file.println(": Start of InitialDataCollection");
     log_file.flush();
-    int total_seconds = rtc.StartTimer(INTIAL_RUN_TIME, minute);
+    int total_seconds = rtc.StartTimer(data_collect_time.time,  data_collect_time.unit);
     char second_line[17];
     rtc.GetRemainingTime(second_line);
     sprintf(data_file_name, "%s0.csv", DATA_FILE_NAME);
@@ -136,7 +141,7 @@ void REATEASystem::REASampling(){
         float threshold = K * data_var.prev_std_dev; 
         unsigned long int num_of_t[2] = {0, 0}; //0: t-up 1: t-down
         long double t_sum[2] = {0.0, 0.0};//0: t-up 1: t-down
-        int total_seconds = rtc.StartTimer(SEGREGATION_TIME, minute);
+        int total_seconds = rtc.StartTimer(segreation_time.time, segreation_time.unit);
         char first_line[17];
         char second_line[17];
         sprintf(first_line, "Sampling %d", i + 1);
@@ -321,6 +326,57 @@ void REATEASystem::StoreAnemBuffer(){
     sprintf(anem_buffer.wind_status[anem_buffer.buffer_count++], "%s", WindStatusToString(wind_status));
 }
 
+void REATEASystem::LoadSettings(){
+    File settings;
+    if(!settings.open("settings.json", FILE_READ)){
+        lcd.PrintBothLine("Failed to", "Open Settings");
+        rtc.StartTimer(3, second);
+        while(rtc.UpdateTimer()){
+        }
+        lcd.PrintBothLine("Using Default", "Settings");
+        rtc.StartTimer(3, second);
+        while(rtc.UpdateTimer()){
+        }
+        return;
+    }
+    StaticJsonDocument<1024> doc;
+    DeserializationError error = deserializeJson(doc, settings);
+    if(error){
+        Serial.print("deserializeJson() returned ");
+        Serial.println(error.c_str());
+        lcd.PrintBothLine("JSON Format ERR", "Please Restart");
+        rtc.StartTimer(3, second);
+        while(rtc.UpdateTimer()){
+        }
+        lcd.PrintBothLine("Using Default", "Settings");
+        rtc.StartTimer(3, second);
+        while(rtc.UpdateTimer()){
+        }
+        return;
+    }
+    data_collect_time.time = doc["data_collect"]["time"];
+    data_collect_time.unit = (doc["data_collect"]["unit"].as<String>() == "second") ? second : 
+                             (doc["data_collect"]["unit"].as<String>() == "hour") ? hour : 
+                             (doc["data_collect"]["unit"].as<String>() == "day") ? day: minute;
+    segreation_time.time = doc["segregation_sample"]["time"];
+    segreation_time.unit = (doc["segregation_sample"]["unit"].as<String>() == "second") ? second : 
+                           (doc["segregation_sample"]["unit"].as<String>() == "hour") ? hour : 
+                           (doc["segregation_sample"]["unit"].as<String>() == "day") ? day: minute;
+    sample_type = (doc["sample_type"].as<String>() == "tea") ? tea : rea;
+}
+
+void REATEASystem::StartSampling(){
+    switch(sample_type){
+        case tea:
+            lcd.PrintBothLine("TEA Not", "Working");
+            while(true){}
+            break;
+        default:
+            REASampling();
+            break;
+    }
+}
+
 const char *WindStatusToString(WindStatus status){
     switch(status){
         case up:
@@ -333,3 +389,5 @@ const char *WindStatusToString(WindStatus status){
             return "none";
     }
 }
+
+

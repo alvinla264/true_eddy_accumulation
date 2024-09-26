@@ -7,6 +7,11 @@ enum TemporalUnit{
     hour,
     day
 };
+
+struct Time{
+    int time;
+    TemporalUnit unit;
+};
 class TimerRTC{
     private:
         RTC_DS3231 rtc;
