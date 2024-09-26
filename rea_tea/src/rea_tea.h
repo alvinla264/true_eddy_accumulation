@@ -37,7 +37,7 @@
 #define NUM_OF_RUNS 3
 
 #define ANEM_DATA_SIZE 9
-#define ANEM_DATA_BUFFER_SIZE 70
+#define ANEM_DATA_BUFFER_SIZE 50
 
 #define NUM_OF_VALVES 8
 #define VALVE_PIN 26
@@ -119,13 +119,12 @@ class REATEASystem{
         struct Time segreation_time;
         SampleType sample_type;
         void REASampling();
+        void LoadSettings();
+        void StoreAnemBuffer();
     public:
         REATEASystem();
         void InitializeSDRTC();
         void InitialDataCollection();
-        
-        void StoreAnemBuffer();
-        void LoadSettings();
         void StartSampling();
 };
 const char *WindStatusToString(WindStatus status);

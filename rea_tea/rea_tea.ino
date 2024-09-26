@@ -15,7 +15,6 @@ void setup(){    // relay_test(26, 33);
     REATEASystem sys;
     // Serial.println("Initilizing System");
     sys.InitializeSDRTC();
-    sys.LoadSettings();
     sys.InitialDataCollection();
     sys.StartSampling();
     //sd_test();

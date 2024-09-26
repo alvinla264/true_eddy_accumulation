@@ -25,6 +25,7 @@ void REATEASystem::InitializeSDRTC(){
         while(true){
         }
     }
+    LoadSettings();
     DateTime now = rtc.now();
     sprintf(data_file_name, "%0.02d_%0.02d_%d_%0.02d_%0.02d_%0.02d", 
         now.month(), now.day(), now.year(), now.hour(), now.minute(), now.second());
@@ -159,7 +160,7 @@ void REATEASystem::REASampling(){
         mfc.SetFlow(DEFAULT_FLOW_RATE);
         pump.update_motor(forward, 255);
         log_file.print(rtc.now().timestamp());
-        log_file.println(": waitin for flow");
+        log_file.println(": Waiting for flow");
         log_file.flush();
         while(mfc.GetFlow() < DEFAULT_FLOW_RATE * 0.99){}
         valves[bypass].TurnRelayOff();
@@ -337,6 +338,24 @@ void REATEASystem::LoadSettings(){
         rtc.StartTimer(3, second);
         while(rtc.UpdateTimer()){
         }
+        if(DEBUG){
+            Serial.println("Unable to locate or open settings.json file");
+            Serial.print("Sample Type: ");
+            Serial.println((sample_type == tea) ? "tea": "rea");
+            Serial.print("Data Collect: ");
+            Serial.print(data_collect_time.time);
+            Serial.print(" ");
+            Serial.println((data_collect_time.unit == second) ? "second" :
+                            (data_collect_time.unit == hour) ? "hour" : 
+                            (data_collect_time.unit == day) ? "day" : "minute");
+            Serial.print("Segregation Time: ");
+            Serial.print(segreation_time.time);
+            Serial.print(" ");
+            Serial.println((segreation_time.unit == second) ? "second" :
+                            (segreation_time.unit == hour) ? "hour" : 
+                            (segreation_time.unit == day) ? "day" : "minute");
+
+        }
         return;
     }
     StaticJsonDocument<1024> doc;
@@ -352,6 +371,24 @@ void REATEASystem::LoadSettings(){
         rtc.StartTimer(3, second);
         while(rtc.UpdateTimer()){
         }
+        if(DEBUG){
+            Serial.println("Unable to Deserialize Json Usng Default Settings");
+            Serial.print("Sample Type: ");
+            Serial.println((sample_type == tea) ? "tea": "rea");
+            Serial.print("Data Collect: ");
+            Serial.print(data_collect_time.time);
+            Serial.print(" ");
+            Serial.println((data_collect_time.unit == second) ? "second" :
+                            (data_collect_time.unit == hour) ? "hour" : 
+                            (data_collect_time.unit == day) ? "day" : "minute");
+            Serial.print("Segregation Time: ");
+            Serial.print(segreation_time.time);
+            Serial.print(" ");
+            Serial.println((segreation_time.unit == second) ? "second" :
+                            (segreation_time.unit == hour) ? "hour" : 
+                            (segreation_time.unit == day) ? "day" : "minute");
+
+        }
         return;
     }
     data_collect_time.time = doc["data_collect"]["time"];
@@ -363,6 +400,24 @@ void REATEASystem::LoadSettings(){
                            (doc["segregation_sample"]["unit"].as<String>() == "hour") ? hour : 
                            (doc["segregation_sample"]["unit"].as<String>() == "day") ? day: minute;
     sample_type = (doc["sample_type"].as<String>() == "tea") ? tea : rea;
+    if(DEBUG){
+        Serial.println("Successfully loaded in settings.json");
+        Serial.print("Sample Type: ");
+        Serial.println((sample_type == tea) ? "tea": "rea");
+        Serial.print("Data Collect: ");
+        Serial.print(data_collect_time.time);
+        Serial.print(" ");
+        Serial.println((data_collect_time.unit == second) ? "second" :
+                        (data_collect_time.unit == hour) ? "hour" : 
+                        (data_collect_time.unit == day) ? "day" : "minute");
+        Serial.print("Segregation Time: ");
+        Serial.print(segreation_time.time);
+        Serial.print(" ");
+        Serial.println((segreation_time.unit == second) ? "second" :
+                        (segreation_time.unit == hour) ? "hour" : 
+                        (segreation_time.unit == day) ? "day" : "minute");
+
+    }
 }
 
 void REATEASystem::StartSampling(){
